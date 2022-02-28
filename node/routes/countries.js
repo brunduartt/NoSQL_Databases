@@ -3,6 +3,7 @@ const ContinentModel = require('../model/Continent');
 const express = require("express");
 const Router = express.Router();
 const Utils = require('../utils');
+
 Router.post('/', async (req, res) => {
     console.log(`POST request to create Country: ${JSON.stringify(req.body)}`);
     const country = CountryModel.mapBodyToEntity(req.body);
@@ -12,6 +13,7 @@ Router.post('/', async (req, res) => {
     }
     return res.status(201).json(newCountry);
 });
+
 Router.get('/count', async (req, res) => {
     console.log(req.query);
     console.log(`GET request to count all Country by: ${JSON.stringify(req.query)}`);

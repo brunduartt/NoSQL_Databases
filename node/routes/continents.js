@@ -16,6 +16,23 @@ Router.get('/count', async (req, res) => {
     return res.status(200).json(countries);
 });
 
+
+//localhost:3000/continents/countriesCount
+Router.get('/countriesCount', async (req, res) => {
+    console.log(req.query);
+    console.log(`GET request to find all Continent by: ${JSON.stringify(req.query)}`);
+    const countries = await ContinentModel.aggregate([
+        {
+            $match: Utils.parseMatchQuery(req.query),
+        }, 
+        {
+            $addFields: { countries: {$size: '$countries'}}
+        }
+    ]);
+    return res.status(200).json(countries);
+});
+
+
 Router.get('/:id', async (req, res) => {
     const id = req.params.id;
     console.log(`GET request to find all Continent by id ${id}`);
@@ -27,14 +44,21 @@ Router.get('/:id', async (req, res) => {
 //localhost:3000/continents/620faccb558d16e032ebe47e/countryAt?pos=3 to get the 4th country of the continent ordered by name 
 Router.get('/:id/countryAt', async (req, res) => {
     const id = req.params.id;
-    const pos = req.query['pos'] ? Number.parseInt(req.query['pos']) : 4;
+    const pos = req.query['pos'] ? Number.parseInt(req.query['pos']) : 3;
     const order = req.query['order'] ? Number.parseInt(req.query['order']) : 1;
     const sort = req.query['sort'] ?? "name";
     const $sort = {};
-    $sort["countries." + sort] = order;
+    $sort[sort] = order;
     console.log(`GET request the ${pos}th country of Continent (_id: ${id}) in ${order == 1 ? 'asc' : 'desc'} order sorted by ${sort}`);
-
-    const country = await ContinentModel.aggregate([
+    const continent = await ContinentModel.findById(id).populate({
+        path: 'countries',
+        options: {
+            sort: $sort,
+            skip: pos,
+            limit : 1 
+        }
+    });
+    /*const country = await ContinentModel.aggregate([
         {$match: { _id: mongoose.Types.ObjectId(id) },},
         {$lookup: {
             from: "countries",
@@ -46,23 +70,23 @@ Router.get('/:id/countryAt', async (req, res) => {
         {$sort: $sort},
         { $skip: pos },
         { $limit : pos+1 }
-    ]);
-    if(country && country[0]) {
-        return res.status(200).json(country[0].countries);
+    ]);*/
+    if(continent) {
+        return res.status(200).json(continent);
     } else {
         return res.status(404).json({"msg": "Not found"});
     }
 });
 
 
-//localhost:3000/continents/?countries.size=3 to get continents with 3 countries
-Router.get('/', async (req, res) => {
+/*localhost:3000/continents/?countries.size=3 to get continents with 3 countries 
+  Did this query above cause I read wrong the assignment (instead of "get continents with their number of countries", I read "with THREE number of countries")
+*/Router.get('/', async (req, res) => {
     console.log(req.query);
     console.log(`GET request to find all Continent by: ${JSON.stringify(req.query)}`);
     const countries = await populate(ContinentModel.find(Utils.parseMatchQuery(req.query)));
     return res.status(200).json(countries);
 });
-
 
 
 Router.delete('/:id', async (req, res) => {

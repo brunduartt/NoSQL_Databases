@@ -4,7 +4,7 @@ module.exports.parseMatchQuery = function(query)  {
     keys.forEach((key) => {
         newQuery = joinQuery(newQuery, getQueryValue(key, query)); //joins current query with the new one
     });
-    console.log(newQuery);
+    //console.log(newQuery);
     return newQuery;
 };
 
@@ -59,7 +59,7 @@ module.exports.parseAggregateQuery = function(query)  {
     newQuery.push({
         $match: matchQuery,
     });
-    console.log(newQuery);
+    //console.log(newQuery);
     return newQuery;
 }
 
